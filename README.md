@@ -1,6 +1,7 @@
-# АгроМаркет API
+# АгроМаркет API (Express + PostgreSQL)
 
 ## Запуск
-```bash
-npm install
-npm run dev    # http://localhost:3000
+1. Установите PostgreSQL и создайте базу `agromarket`.
+2. Скопируйте `.env.example` в `.env` и укажите пароль:
+   ```bash
+   cp .env.example .env

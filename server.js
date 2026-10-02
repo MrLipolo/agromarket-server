@@ -1,42 +1,41 @@
+import 'dotenv/config'; // Импорт в первой строке обязателен!
 import express from 'express';
 import cors from 'cors';
+import { pool } from './db/pool.js';
 import { logger } from './middleware/logger.js';
+import { errorHandler } from './middleware/errorHandler.js';
 import productsRouter from './routes/products.js';
 import ordersRouter from './routes/orders.js';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: process.env.CORS_ORIGIN }));
 app.use(express.json());
 app.use(logger);
 
-// Вспомогательные маршруты
-app.get('/', (req, res) => {
-  res.send('АгроМаркет API работает');
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date().toISOString() });
+app.get('/api/health', async (req, res) => {
+  await pool.query('SELECT 1');
+  res.json({ status: 'ok', db: 'connected', time: new Date().toISOString() });
 });
 
 app.get('/api/about', (req, res) => {
   res.json({
     name: 'АгроМаркет',
     version: '1.0',
-    author: 'Гончаров Константин'
+    author: 'Гончаров Константин',
   });
 });
 
-// Маршруты API через Router
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
 
-// Обработка несуществующих маршрутов (404)
 app.use((req, res) => {
   res.status(404).json({ error: `Маршрут ${req.method} ${req.originalUrl} не найден` });
 });
+
+// Централизованный обработчик ошибок — всегда в самом конце
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`API запущен: http://localhost:${PORT}`);
