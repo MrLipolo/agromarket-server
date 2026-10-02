@@ -1,0 +1,8 @@
+{
+  "products": [
+    { "id": 1, "name": "Картофель, 1 кг", "price": 350, "image": "https://images.gastronom.ru/sjaktugPM5gGCO3NYEmU4SRmTyRI6oKZsDfWci2ylfo/pr:article-content-image/g:ce/rs:auto:0:0:0/L2Ntcy9hbGwtaW1hZ2VzLzJhODE2Nzc0LWEyZmUtNGE0MS05YWE1LTBiYTcxMjQ0MzAzZS5qcGc.webp" },
+    { "id": 2, "name": "Мёд натуральный, 1 л", "price": 4500, "image": "https://qwintry.store/images/ck/photo-1587049352851-8d4e89133924_1627053828.jpg" },
+    { "id": 3, "name": "Молоко фермерское, 1 л", "price": 600, "image": "https://img.oe.kz/bitrix-catalog/32887/1720309117-moloko-lactel-1-litr-zhirnost-1-5-kartonnaya-upakovka-2.jpeg" },
+    { "id": 4, "name": "Яблоки домашние, 1 кг", "price": 850, "image": "https://sever-press.ru/images/insecure/rs:fill-down:1920:1080/aHR0cHM6Ly9zdG9yYWdlLnlhbmRleGNsb3VkLm5ldC95bS1zaXRlcy1zdGF0aWMvYTk3OTk3NGQtYjFjLndlYnA.webp" }
+  ]
+}
