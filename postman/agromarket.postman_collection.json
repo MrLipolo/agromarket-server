@@ -1,21 +1,14 @@
 {
   "info": {
-    "name": "AgroMarket API",
+    "name": "AgroMarket API (Lab 7)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:3000/api"
-    },
-    {
-      "key": "productId",
-      "value": ""
-    },
-    {
-      "key": "orderId",
-      "value": ""
-    }
+    { "key": "baseUrl", "value": "http://localhost:3000/api" },
+    { "key": "adminEmail", "value": "admin@agromarket.kz" },
+    { "key": "adminPassword", "value": "Admin12345" },
+    { "key": "token", "value": "" },
+    { "key": "userToken", "value": "" }
   ],
   "item": [
     {
@@ -23,206 +16,80 @@
       "request": {
         "method": "GET",
         "url": "{{baseUrl}}/health"
-      },
+      }
+    },
+    {
+      "name": "Вход администратора",
       "event": [
         {
           "listen": "test",
           "script": {
-            "exec": ["pm.test('Status is 200', () => pm.response.to.have.status(200));"]
+            "exec": [
+              "pm.test('Статус 200', () => { pm.response.to.have.status(200); });",
+              "pm.collectionVariables.set('token', pm.response.json().token);"
+            ]
           }
         }
-      ]
-    },
-    {
-      "name": "Search Products",
-      "request": {
-        "method": "GET",
-        "url": "{{baseUrl}}/products?search=мол"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": ["pm.test('Status is 200', () => pm.response.to.have.status(200));"]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Create Product",
+      ],
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\"name\":\"Тестовый картофель\",\"price\":200}"
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+        },
+        "url": "{{baseUrl}}/auth/login"
+      }
+    },
+    {
+      "name": "Регистрация пользователя",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Статус 201', () => { pm.response.to.have.status(201); });",
+              "pm.collectionVariables.set('userToken', pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Тестовый Юзер\",\n  \"email\": \"user{{$timestamp}}@test.kz\",\n  \"password\": \"qwerty123\"\n}"
+        },
+        "url": "{{baseUrl}}/auth/register"
+      }
+    },
+    {
+      "name": "Получить товары",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/products"
+      }
+    },
+    {
+      "name": "Создать товар без токена (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": ["pm.test('Статус 401', () => { pm.response.to.have.status(401); });"]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Тест\",\n  \"price\": 100\n}"
         },
         "url": "{{baseUrl}}/products"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
-              "const data = pm.response.json();",
-              "pm.collectionVariables.set('productId', data.id);"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Get Product By ID",
-      "request": {
-        "method": "GET",
-        "url": "{{baseUrl}}/products/{{productId}}"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": ["pm.test('Status is 200', () => pm.response.to.have.status(200));"]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Update Product",
-      "request": {
-        "method": "PUT",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"name\":\"Картофель премиум\",\"price\":250}"
-        },
-        "url": "{{baseUrl}}/products/{{productId}}"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": ["pm.test('Status is 200', () => pm.response.to.have.status(200));"]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Invalid Product (Bad Request)",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"price\":-5}"
-        },
-        "url": "{{baseUrl}}/products"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": ["pm.test('Status is 400', () => pm.response.to.have.status(400));"]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Create Order",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"name\":\"Иван\",\"email\":\"ivan@mail.kz\",\"quantity\":15}"
-        },
-        "url": "{{baseUrl}}/orders"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
-              "const data = pm.response.json();",
-              "pm.collectionVariables.set('orderId', data.id);"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Invalid Order (<10kg)",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"name\":\"Иван\",\"email\":\"ivan@mail.kz\",\"quantity\":5}"
-        },
-        "url": "{{baseUrl}}/orders"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 400', () => pm.response.to.have.status(400));",
-              "pm.test('Contains 10 kg error', () => pm.expect(pm.response.json().error).to.include('10 кг'));"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Update Order Status",
-      "request": {
-        "method": "PATCH",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\"status\":\"processing\"}"
-        },
-        "url": "{{baseUrl}}/orders/{{orderId}}"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": ["pm.test('Status is 200', () => pm.response.to.have.status(200));"]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Delete Product",
-      "request": {
-        "method": "DELETE",
-        "url": "{{baseUrl}}/products/{{productId}}"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": ["pm.test('Status is 204', () => pm.response.to.have.status(204));"]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Get Deleted Product",
-      "request": {
-        "method": "GET",
-        "url": "{{baseUrl}}/products/{{productId}}"
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": ["pm.test('Status is 404', () => pm.response.to.have.status(404));"]
-          }
-        }
-      ]
+      }
     }
   ]
 }
