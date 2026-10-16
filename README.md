@@ -1,7 +1,11 @@
-# АгроМаркет API (Express + PostgreSQL)
+![CI](https://github.com/ВАШ_GITHUB_LOGICAL_NAME/agromarket-server/actions/workflows/ci.yml/badge.svg)
 
-## Запуск
-1. Установите PostgreSQL и создайте базу `agromarket`.
-2. Скопируйте `.env.example` в `.env` и укажите пароль:
-   ```bash
-   cp .env.example .env
+## Тестирование
+1. Создать базу `agromarket_test`
+2. Настроить `.env.test`
+3. Запуск тестов: `npm test`, просмотр покрытия: `npm run coverage`
+
+## Лабораторная 8 — ответы
+- Какие тесты упали, когда убрали adminOnly: упали тесты проверки 403 Forbidden в access.test.js, так как метод стал доступен без прав админа.
+- Покрытие (Lines): 68.14%. Непокрытые строки в orders.js связаны с отсутствием тестов оформления заказов.
+- Чем unit-тест отличается от интеграционного: unit-тест проверяет отдельную функцию изолированно с помощью mock-объектов (без БД), а интеграционный — цепочку HTTP -> Express -> БД.
