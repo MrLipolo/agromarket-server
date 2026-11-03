@@ -1,8 +1,12 @@
 import pg from 'pg';
 
-// Сохраняем формат даты YYYY-MM-DD без смещения часовых поясов
-pg.types.setTypeParser(1082, (value) => value);
-
 export const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
+  max: 5,
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 10_000,
+});
+
+pool.on('error', (err) => {
+  console.error('PostgreSQL: соединение потеряно —', err.message);
 });
