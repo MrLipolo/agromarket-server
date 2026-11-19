@@ -11,7 +11,8 @@ const testEnv = {
   JWT_EXPIRES_IN: '2h',
   ADMIN_EMAIL: envConfig.parsed?.ADMIN_EMAIL || 'admin@test.kz',
   ADMIN_PASSWORD: envConfig.parsed?.ADMIN_PASSWORD || 'Admin12345',
-  CORS_ORIGIN: 'http://localhost:5173'
+  CORS_ORIGIN: 'http://localhost:5173',
+  CORS_ORIGINS: 'http://localhost:5173'
 };
 
 export default defineConfig({

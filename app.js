@@ -12,19 +12,19 @@ const app = express();
 
 const VERSION = (process.env.RENDER_GIT_COMMIT || 'local').slice(0, 7);
 
-// На Render запрос приходить через прокси-балансировщик
+// На Render запрос приходит через прокси-балансировщик
 app.set('trust proxy', 1);
 
 app.use(helmet());
 
 // Разрешаем CORS для списка доменов через запятую
-const allowedOrigins = (process.env.CORS_ORIGIN || '')
+const allowedOrigins = (process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || 'http://localhost:5173')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
 
 app.use(cors({ origin: allowedOrigins }));
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '100kb' }));
 
 if (process.env.NODE_ENV !== 'test') {
   app.use(logger);

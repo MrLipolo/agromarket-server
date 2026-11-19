@@ -1,20 +1,13 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+import { productSchema, productUpdateSchema } from '../validation/schemas.js';
+import { idParam } from '../middleware/idParam.js';
 
 const router = Router();
 // Цепочка middleware: сначала проверяем токен, затем роль админа
 const adminOnly = [requireAuth, requireRole('admin')];
-
-function validateProduct(body) {
-  const { name, price } = body;
-  if (!name || !String(name).trim()) return 'Поле name обязательно';
-  const n = Number(price);
-  if (price === undefined || price === '' || !Number.isInteger(n) || n < 0) {
-    return 'Поле price должно быть целым числом ≥ 0';
-  }
-  return null;
-}
 
 // GET /api/products — доступен ВСЕМ
 router.get('/', async (req, res) => {
@@ -27,17 +20,15 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/products/:id — доступен ВСЕМ
-router.get('/:id', async (req, res) => {
+router.get('/:id', idParam, async (req, res) => {
   const { rows } = await pool.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
   if (rows.length === 0) return res.status(404).json({ error: 'Товар не найден' });
   res.json(rows[0]);
 });
 
 // POST /api/products — только для ADMIN
-router.post('/', adminOnly, async (req, res) => {
-  const body = req.body || {};
-  const error = validateProduct(body);
-  if (error) return res.status(400).json({ error });
+router.post('/', adminOnly, validate(productSchema), async (req, res) => {
+  const body = req.body;
 
   const { name, category, price, unit, image } = body;
   const { rows } = await pool.query(
@@ -49,12 +40,12 @@ router.post('/', adminOnly, async (req, res) => {
 });
 
 // PUT /api/products/:id — только для ADMIN
-router.put('/:id', adminOnly, async (req, res) => {
-  const body = req.body || {};
-  const error = validateProduct(body);
-  if (error) return res.status(400).json({ error });
-
-  const { name, category, price, unit, image } = body;
+router.put('/:id', adminOnly, idParam, validate(productUpdateSchema), async (req, res) => {
+  const body = req.body;
+  const current = await pool.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
+  if (current.rows.length === 0) return res.status(404).json({ error: 'Товар не найден' });
+  const merged = { ...current.rows[0], ...body };
+  const { name, category, price, unit, image } = merged;
   const { rows } = await pool.query(
     `UPDATE products
      SET name = $1, category = $2, price = $3, unit = $4, image = $5
@@ -66,7 +57,7 @@ router.put('/:id', adminOnly, async (req, res) => {
 });
 
 // DELETE /api/products/:id — только для ADMIN
-router.delete('/:id', adminOnly, async (req, res) => {
+router.delete('/:id', adminOnly, idParam, async (req, res) => {
   const { rowCount } = await pool.query('DELETE FROM products WHERE id = $1', [req.params.id]);
   if (rowCount === 0) return res.status(404).json({ error: 'Товар не найден' });
   res.status(204).end();
