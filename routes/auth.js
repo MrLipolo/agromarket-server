@@ -1,20 +1,14 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { rateLimit } from 'express-rate-limit';
 import { pool } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.js';
+import { authLimiter } from '../middleware/rateLimit.js';
+
+import { validate } from '../middleware/validate.js';
+import { loginSchema, registerSchema } from '../validation/schemas.js';
 
 const router = Router();
-
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 5,
-  skipSuccessfulRequests: true,
-  message: { error: 'Слишком много попыток входа. Попробуйте через 15 минут' },
-  standardHeaders: 'draft-8',
-  legacyHeaders: false,
-});
 
 function createToken(user) {
   return jwt.sign(
@@ -25,7 +19,7 @@ function createToken(user) {
 }
 
 // POST /api/auth/register
-router.post('/register', async (req, res, next) => {
+router.post('/register', authLimiter, validate(registerSchema), async (req, res, next) => {
   try {
     const { name, email, password } = req.body || {};
 
@@ -57,7 +51,7 @@ router.post('/register', async (req, res, next) => {
 });
 
 // POST /api/auth/login
-router.post('/login', loginLimiter, async (req, res, next) => {
+router.post('/login', authLimiter, validate(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body || {};
     if (!email || !password) {
